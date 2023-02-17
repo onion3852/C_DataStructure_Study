@@ -1,108 +1,80 @@
 #include <stdio.h>
 #include <string.h>
 
-#define MAX_DATA 100
-#define LIMIT    20
+#define MAX_DATA    100
+#define BUFFER_SIZE 20
 
-int read_til_space(char *ptr1, char *ptr2, char *ptr3, int num);
+char * names  [MAX_DATA];
+char * numbers[MAX_DATA];
+int n = 0;  // number of stored data(저장된 사람 수와 같음)
+
 void add();
 void find();
-void delete();
 void status();
+void delete();
 
 int main(){
-    char *name   [MAX_DATA];
-    char *number [MAX_DATA];
+    char command [BUFFER_SIZE];
 
-    char a       [LIMIT];  // command
-    char b       [LIMIT];  // name
-    char c       [LIMIT];  // number
-
-    const char *str1 = "add";
-    const char *str2 = "find";        
-    const char *str3 = "delete";    
-    const char *str4 = "status";    
-    const char *str5 = "exit";        
-
-    printf("Phone Book Program Start...\n");
-    printf("Type commands. ex) add, find, delete, status and exit\n\n");
     while(1){
         printf("$ ");
-        read_til_space(a, b, c, LIMIT);
-        
-        if(!(strcmp(a, str1)))
-            add();
-        else if(!(strcmp(a, str2)))
-            find();
-        else if(!(strcmp(a, str3)))
-            delete();
-        else if(!(strcmp(a, str4)))
-            status();
-        else if(!(strcmp(a, str5))){
-            printf("Program closed...\n");
-            return 0;
-        }
-    }
+        scanf("%s", command);   
+        // scanf()가 공백문자 입력받기 전 까지를 저장함을 이용
 
-    
+        // 두 문자열을 비교하여 같다면 0을 반환하는 strcmp를 이용
+        if(strcmp(command, "add"))
+            add();
+        else if(strcmp(command, "find"))
+            find();
+        else if(strcmp(command, "status"))
+            status();
+        else if(strcmp(command, "delete"))
+            delete();
+        else if(strcmp(command, "exit"))
+            break;          
+    }
 
     return 0;
 }
 
-
-////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////
 // function declaration
-////////////////////////////////////////////////////////////////
-
-int read_til_space(char *ptr1, char *ptr2, char *ptr3, int num){
-    int ch;
-    int n = 0;
-
-    // store command
-    while((ch = getchar()) != ('\0' || '\n')){
-        if(n < num){
-            ptr1[n] = ch;
-            n++;
-        }
-    }
-    ptr1[n] = '\0';
-    n = 0;
-
-    // store name if exists
-    while((ch = getchar()) != ('\0' || '\n')){
-        if(n < num){
-            ptr2[n] = ch;
-            n++;
-        }
-    }
-    ptr2[n] = '\0';
-    n = 0;
-
-    // store number if exists
-    while((ch = getchar()) != ('\0' || '\n')){
-        if(n < num){
-            ptr3[n] = ch;
-            n++;
-        }
-    }
-    ptr3[n] = '\0';
-    n = 0;
-
-    return n;
-}
-
+///////////////////////////////////////////////////////////////
 void add(){
+    char str1 [BUFFER_SIZE];
+    char str2 [BUFFER_SIZE];
 
+    scanf("%s", str1);
+    scanf("%s", str2);
+    names[n]   = strdup(str1);
+    numbers[n] = strdup(str2);
+    // strdup()는 내부적으로 malloc()을 통해 메모리를 할당받고 
+    // 거기에 문자열을 복사한다. 그리고 그 공간의 시작점을 return한다.(포인터)
+    n++;
+
+    printf("%s was added successfully.\n", str1);
 }
 
 void find(){
+    char str1 [BUFFER_SIZE];
+    int i;
 
-}
-
-void delete(){
-
+    scanf("%s", str1);
+    for(i = 0; i < MAX_DATA; i++){
+        if(strcmp(names[i], str1) == 0)
+            printf("%s\n", numbers[i]);
+            return;
+    }
 }
 
 void status(){
+    int i;
+
+    for(i = 0; i < n; i++){
+        printf()
+    }
+}
+
+void delete(){
 
 }
