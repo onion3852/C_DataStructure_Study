@@ -3,6 +3,10 @@
 // 리턴을 제외하고, 입력한 문장을 그대로 출력하고 입력한 문장의 길이를 출력한다.
 // 이때 띄어쓰기(공백문자)와 문장의 앞, 뒤 공백문자도 모두 카운트 하도록 한다.
 
+// 작성하려는 기능에 따라
+// scanf, gets, fgets 등등
+// 여러가지 함수들을 생각해 볼 수 있음
+
 #include <stdio.h>
 #include <string.h>
 
@@ -30,7 +34,7 @@ int main(){
 }
 
 int read_line(char *ptr, int limit){
-    int ch;
+    int ch;  // why int ???
     int i = 0;
 
     while((ch = getchar()) != '\n'){
