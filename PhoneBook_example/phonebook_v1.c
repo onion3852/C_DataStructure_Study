@@ -22,15 +22,15 @@ int main(){
         // scanf()가 공백문자 입력받기 전 까지를 저장함을 이용
 
         // 두 문자열을 비교하여 같다면 0을 반환하는 strcmp를 이용
-        if(strcmp(command, "add"))
+        if(!strcmp(command, "add"))
             add();
-        else if(strcmp(command, "find"))
+        else if(!strcmp(command, "find"))
             find();
-        else if(strcmp(command, "status"))
+        else if(!strcmp(command, "status"))
             status();
-        else if(strcmp(command, "delete"))
+        else if(!strcmp(command, "delete"))
             delete();
-        else if(strcmp(command, "exit"))
+        else if(!strcmp(command, "exit"))
             break;          
     }
 
@@ -60,21 +60,40 @@ void find(){
     int i;
 
     scanf("%s", str1);
-    for(i = 0; i < MAX_DATA; i++){
-        if(strcmp(names[i], str1) == 0)
+    for(i = 0; i < n; i++){
+        if(strcmp(str1, names[i]) == 0){
             printf("%s\n", numbers[i]);
             return;
+        }
     }
+    printf("Person named '%s' isn't exists.\n", str1);
 }
 
 void status(){
     int i;
 
-    for(i = 0; i < n; i++){
-        printf()
-    }
+    for(i = 0; i < n; i++)
+        printf("%s : %s\n", names[i], numbers[i]);
+
+    printf("Total %d person\n", n);
 }
 
 void delete(){
+    char str1[BUFFER_SIZE];
+    int i;
 
+    scanf("%s", str1);
+    // 맨 마지막 저장 데이터를 없앨 데이터 위치로 옮긴다.
+    // 실제 삭제 과정이 필요한 것이 아님
+    for(i = 0; i < n; i ++){
+        if(strcmp(str1, names[i]) == 0){
+            names[i]   = names[n - 1];
+            numbers[i] = numbers[n - 1];
+            n--;
+            printf("'%s' was deleted successfully.\n", str1);
+            
+            return;
+        }
+    }
+    printf("Person named '%s' isn't exists.\n", str1);
 }
