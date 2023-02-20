@@ -1,20 +1,36 @@
-// version_2
+// version_3
 
-///////////////////////////////////////////////////////////
-// txt파일로 저장하고 로드하기
+//////////////////////////////////////////////////////////////////////////////
+// 명령을 라인 단위로 받는 방식으로 변경
+// 즉, 프롬프트에 입력하고 엔터키 입력하면 통째로 명령을 입력 받는 것임
+// 잘못된 명령어(완전하지 않은 format 등)에 대한 반응 추가
 
-// 알파벳 순 정렬 기능 추가
-///////////////////////////////////////////////////////////
+// 받은 명령문자열을 작은 문자열들로 tokenizing 하는 기능 추가
+// <string.h> 에서 제공하는 strtok()함수 이용
+
+// 배열 재할당 기능 추가
+// 저장된 사람의 수가 배열 용량을 초과할 경우, 동적메모리 할당으로 더 큰 배열 만들기
+// 동적메모리 할당을 이용할 경우를 대비해 names와 numbers 자료구조의 변화가 필요
+// version_2의 names와 numbers는 배열로 선언된 상태이므로
+// 배열의 이름이자 포인터 변수인 names, numbers는 값을 바꿀 수 없기 때문임
+// 따라서 names와 numbers의 배열을 포인터로써 정의해야함
+//////////////////////////////////////////////////////////////////////////////
+
 #include <stdio.h>
 #include <string.h>
+#include <stdlib.h>
 
-#define MAX_DATA    100
-#define BUFFER_SIZE 20
+#define MAX_DATA    3   // 배열 재할당 기능을 테스트하기 위해, 매우 작은 수로 설정함
+#define BUFFER_SIZE 50
 
-char * names  [MAX_DATA];
-char * numbers[MAX_DATA];
-int n = 0;  // number of stored data(저장된 사람 수와 같음)
+char ** names  ;    // names는 char* 타입 배열의 '이름', 즉, char** 타입 변수
+char ** numbers;    // numbers는 char* 타입 배열의 '이름', 즉, char** 타입 변수
 
+int n    = 0;       // number of stored data(저장된 사람 수와 같음)
+int capa = MAX_DATA;
+
+void process_command();
+void read_line();
 void add();
 void find();
 void status();
@@ -22,9 +38,10 @@ void delete();
 void load();
 void save();
 int  search();
+void reallocate();  // 배열 재할당 기능
 
 int main(){
-    char command [BUFFER_SIZE];
+    process_command();
 
     while(1){
         printf("$ ");
@@ -54,6 +71,22 @@ int main(){
 ///////////////////////////////////////////////////////////////
 // function declaration
 ///////////////////////////////////////////////////////////////
+void process_command(){
+    char command_line [BUFFER_SIZE];  // 한 라인을 전부 읽어오기 위한 buffer
+    char *command;
+    char *argument_1;
+    char *argument_2;
+
+    while(1){
+        printf("$ ");
+
+    }
+}
+
+void read_line(){
+    
+}
+
 void add(){
     char str1 [BUFFER_SIZE];
     char str2 [BUFFER_SIZE];
@@ -199,4 +232,8 @@ int search(char *name){
     }
     // if not exists, return -1
     return -1;
+}
+
+void reallocate(){
+
 }
