@@ -32,16 +32,16 @@ int n    = 0;       // number of stored data(저장된 사람 수와 같음)
 int capa = INIT_CAPA;
 
 void init_directory();  // 배열 names와 numbers 생성
+void reallocate();      // 배열 재할당 기능
 void process_command();
 int  read_line(char *str, int limit);
 void add(char *str1, char *str2);
-void find();
+void find(char *name);
 void status();
-void delete();
+void delete(char *name);
 void load(char *filename);
-void save();
+void save(char *as, char*filename);
 int  search();
-void reallocate();  // 배열 재할당 기능
 
 int main(){
     
@@ -77,7 +77,7 @@ int main(){
 
 
 ///////////////////////////////////////////////////////////////
-// function declaration
+// Function declaration
 ///////////////////////////////////////////////////////////////
 
 void init_directory(){
@@ -100,7 +100,7 @@ void process_command(){
         if(strcmp(command, "read") == 0){
             argument_1 = strtok(NULL, delim);
             if(argument_1 == NULL){
-                printf("Error : File name required.\n");
+                printf("Error : File name is required.\n");
                 continue;
             }
             load(argument_1);
@@ -108,9 +108,56 @@ void process_command(){
 
         else if(strcmp(command, "add") == 0){
             argument_1 = strtok(NULL, delim);
+            if(argument_1 == NULL){
+                printf("Error : Person name and phone number are required\n");
+                continue;
+            }
             argument_2 = strtok(NULL, delim);
-
+            if(argument_2 == NULL){
+                printf("Error : Phone number is required\n");
+                continue;
+            }
+            add(argument_1, argument_2);
         }// "command == add"
+
+        else if(strcmp(command, "find") == 0){
+            argument_1 = strtok(NULL, delim);
+            if(argument_1 == NULL){
+                printf("Error : Person name is required\n");
+                continue;
+            }
+            find(argument_1);
+        }// "command == find"
+
+        else if(strcmp(command, "status") == 0){
+            status();
+        }// "command == status"
+
+        else if(strcmp(command, "delete") == 0){
+            argument_1 = strtok(NULL, delim);
+            if(argument_1 == NULL){
+                printf("Error : Person name is required\n");
+                continue;
+            }
+            delete(argument_1);
+        }// "command == delete"
+
+        else if(strcmp(command, "save") == 0){
+            argument_1 = strtok(NULL, delim);
+            if(argument_1 == NULL){
+                printf("Error : Word 'as' is required\n");
+                continue;
+            }
+            argument_2 = strtok(NULL, delim);
+            if(argument_2 == NULL){
+                printf("Error : File name is required\n");
+                continue;
+            }
+            save(argument_1, argument_2);
+        }// "command == save"
+
+        else if(strcmp(command, "exit") == 0)
+            break;
     }
 }
 
@@ -168,16 +215,14 @@ void add(char *name, char *number){
     printf("%s was added successfully.\n", name);
 }
 
-void find(){
-    char str1 [BUFFER_SIZE];
+void find(char *name){
     int i;
 
-    scanf("%s", str1);
-    if((i = search(str1)) >= 0){
+    if((i = search(name)) >= 0){
         printf("%s's number is %s.\n",names[i], numbers[i]);
         return;
     }
-    printf("Person named '%s' isn't exists.\n", str1);
+    printf("Person named '%s' isn't exists.\n", name);
 }
 
 void status(){
@@ -189,29 +234,27 @@ void status(){
     printf("Total %d persons.\n", n);
 }
 
-void delete(){
-    char str1[BUFFER_SIZE];
+void delete(char *name){
     int i;
 
-    scanf("%s", str1);
-    if((i = search(str1)) >= 0){
+    if((i = search(name)) >= 0){
         for(; i < n - 1; i++){
             names[i]   = names[i + 1];
             numbers[i] = numbers[i + 1];
             n--;
-            printf("'%s' was deleted successfully.\n", str1);
+            printf("'%s' was deleted successfully.\n", name);
             
             return;
         }
         // if i == n
-        names[i] = '\0';
+        names[i]   = '\0';
         numbers[i] = '\0';
         n--;
-        printf("'%s' was deleted successfully.\n", str1);
+        printf("'%s' was deleted successfully.\n", name);
             
         return;
     }
-    printf("Person named '%s' isn't exists.\n", str1);
+    printf("Person named '%s' isn't exists.\n", name);
 }
 
 void load(char *filename){
@@ -240,17 +283,13 @@ void load(char *filename){
     fclose(fp);
 }
 
-void save(){
+void save(char *as, char*filename){
     // save 명령의 입력 format은 
     // save as <file_name>
-    char str1 [BUFFER_SIZE];
-    char str2 [BUFFER_SIZE];
     int i;
 
-    scanf("%s", str1);  // as
-    scanf("%s", str2);  // file_name
     // 파일에 write하기 위해 파일 open
-    FILE *fp = fopen(str2, "w");
+    FILE *fp = fopen(filename, "w");
     if(fp == NULL){
         printf("Open failed.\n");
         return;
@@ -259,14 +298,14 @@ void save(){
     for(i = 0; i < n; i++){
         fprintf(fp, "%s ", names[i]);
         fprintf(fp, "%s\n", numbers[i]);
-        printf("%s was saved successfully.\n", str2);
+        printf("%s was saved successfully.\n", filename);
     }
     fclose(fp);
 }
 
 int search(char *name){
     // function 내부에서 활용할,
-    // 이름 검색 함수
+    // 전화번호부 내부 이름 검색 함수
     int index;
 
     for(index = 0; index < n; index++){
@@ -280,5 +319,7 @@ int search(char *name){
 }
 
 void reallocate(){
+    // 전화번호부 배열 용량 초과 시,
+    // 배열 재할당하여 더 큰 배열로 대체하는 함수
 
 }
