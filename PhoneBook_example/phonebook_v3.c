@@ -20,29 +20,35 @@
 #include <string.h>
 #include <stdlib.h>
 
-#define MAX_DATA    3   // 배열 재할당 기능을 테스트하기 위해, 매우 작은 수로 설정함
+#define INIT_CAPA   3    // 배열 재할당 기능을 테스트하기 위해, 매우 작은 수로 설정함
+#define MAX_DATA    100
 #define BUFFER_SIZE 50
 
 char ** names  ;    // names는 char* 타입 배열의 '이름', 즉, char** 타입 변수
 char ** numbers;    // numbers는 char* 타입 배열의 '이름', 즉, char** 타입 변수
 
+char *delim = " ";  // strtok()의 2nd argument인 delimiter로 공백문자를 쓸 것임
 int n    = 0;       // number of stored data(저장된 사람 수와 같음)
-int capa = MAX_DATA;
+int capa = INIT_CAPA;
 
+void init_directory();  // 배열 names와 numbers 생성
 void process_command();
-void read_line();
-void add();
+int  read_line(char *str, int limit);
+void add(char *str1, char *str2);
 void find();
 void status();
 void delete();
-void load();
+void load(char *filename);
 void save();
 int  search();
 void reallocate();  // 배열 재할당 기능
 
 int main(){
+    
+    init_directory();
     process_command();
 
+    /*
     while(1){
         printf("$ ");
         scanf("%s", command);   
@@ -64,13 +70,21 @@ int main(){
         else if(strcmp(command, "exit") == 0)
             break;          
     }
+    */
 
     return 0;
 }
 
+
 ///////////////////////////////////////////////////////////////
 // function declaration
 ///////////////////////////////////////////////////////////////
+
+void init_directory(){
+    names   = (char **)malloc(INIT_CAPA * sizeof(char *));
+    numbers = (char **)malloc(INIT_CAPA * sizeof(char *));
+}
+
 void process_command(){
     char command_line [BUFFER_SIZE];  // 한 라인을 전부 읽어오기 위한 buffer
     char *command;
@@ -79,49 +93,79 @@ void process_command(){
 
     while(1){
         printf("$ ");
+        if(read_line(command_line, BUFFER_SIZE) <= 0)
+            continue;   // 프롬프트에서 바로 엔터키를 누른 경우에 해당
+        
+        command = strtok(command_line, delim);
+        if(strcmp(command, "read") == 0){
+            argument_1 = strtok(NULL, delim);
+            if(argument_1 == NULL){
+                printf("Error : File name required.\n");
+                continue;
+            }
+            load(argument_1);
+        }// "command == read"
 
+        else if(strcmp(command, "add") == 0){
+            argument_1 = strtok(NULL, delim);
+            argument_2 = strtok(NULL, delim);
+
+        }// "command == add"
     }
 }
 
-void read_line(){
-    
+int read_line(char *str, int limit){
+    int ch;  // getchar()의 리턴은 int type이어야 한다는 점 주의
+    int i = 0;
+
+    while((ch = getchar()) != '\n'){
+        if(i < limit - 1)
+        str[i] = ch;
+        i++;
+    }
+    // 만약 i 가 'limit' 까지 증가
+    // 또는 i 가 0일 때 \n 만날 경우
+    str[i] = '\0';
+
+    return i;
 }
 
-void add(){
-    char str1 [BUFFER_SIZE];
-    char str2 [BUFFER_SIZE];
+void add(char *name, char *number){
+    /////////////////////////////////////////////////////////////==================================
+    if(n >= capa)
+        reallocate();
+    /////////////////////////////////////////////////////////////==================================
+
     int i, p;
 
-    scanf("%s", str1);
-    scanf("%s", str2);
     // 알파벳 순서대로 정렬하기 위한 part
-    i = search(str1);
+    i = search(name);
     if(i >= 0){
-        printf("Person named '%s' already exists. Try other name.\n", str1);
+        printf("Person named '%s' already exists. Try other name.\n", name);
 
         return;
     }
 
     // 새로운 사람일 경우
     for(i = 0; i < n; i++){
-        if(strcmp(str1, names[i]) < 0){
+        if(strcmp(name, names[i]) < 0){
             for(p = n - 1; p > i - 1; p--){
                 names  [p + 1] = names[p];
                 numbers[p + 1] = numbers[p];
             }
-            names[i]   = strdup(str1);
-            numbers[i] = strdup(str2);
+            names[i]   = strdup(name);
+            numbers[i] = strdup(number);
             n++;
-            printf("%s was added successfully.\n", str1);
+            printf("%s was added successfully.\n", name);
 
             return;
         }
     }
     // 만약 가장 마지막 순서의 이름일 경우
-    names[n]   = strdup(str1);
-    numbers[n] = strdup(str2);
+    names[n]   = strdup(name);
+    numbers[n] = strdup(number);
     n++;
-    printf("%s was added successfully.\n", str1);
+    printf("%s was added successfully.\n", name);
 }
 
 void find(){
@@ -170,17 +214,15 @@ void delete(){
     printf("Person named '%s' isn't exists.\n", str1);
 }
 
-void load(){
+void load(char *filename){
     // 파일을 불러오기 위해 호출되는 함수
     // read 명령의 format은
     // read <file_name>
-    char str1 [BUFFER_SIZE];
     char buf1 [BUFFER_SIZE];
     char buf2 [BUFFER_SIZE];
 
-    scanf("%s", str1);
     // 파일에 접근하기 위해 파일 open
-    FILE *fp = fopen(str1, "r");
+    FILE *fp = fopen(filename, "r");
     if(fp == NULL){
         printf("Open failed,\n");
         return;
@@ -223,14 +265,17 @@ void save(){
 }
 
 int search(char *name){
-    // function 내부에서 활용할 이름 검색 기능
+    // function 내부에서 활용할,
+    // 이름 검색 함수
     int index;
 
     for(index = 0; index < n; index++){
         if(strcmp(name, names[index]) == 0)
             return index;
+            // 동일한 이름을 찾으면 
+            // names 배열에서의 해당 index return
     }
-    // if not exists, return -1
+    // if same name isn't exists, return -1
     return -1;
 }
 
