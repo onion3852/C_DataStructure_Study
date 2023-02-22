@@ -24,8 +24,8 @@
 #define MAX_DATA    100
 #define BUFFER_SIZE 50
 
-char ** names  ;    // names는 char* 타입 배열의 '이름', 즉, char** 타입 변수
-char ** numbers;    // numbers는 char* 타입 배열의 '이름', 즉, char** 타입 변수
+char **names  ;    // names는 char* 타입 배열의 '이름', 즉, char** 타입 변수
+char **numbers;    // numbers는 char* 타입 배열의 '이름', 즉, char** 타입 변수
 
 char *delim = " ";  // strtok()의 2nd argument인 delimiter로 공백문자를 쓸 것임
 int n    = 0;       // number of stored data(저장된 사람 수와 같음)
@@ -43,34 +43,11 @@ void load(char *filename);
 void save(char *as, char*filename);
 int  search();
 
+
 int main(){
     
     init_directory();
     process_command();
-
-    /*
-    while(1){
-        printf("$ ");
-        scanf("%s", command);   
-        // scanf()가 공백문자 입력받기 전 까지를 저장함을 이용
-
-        // 두 문자열을 비교하여 같다면 0을 반환하는 strcmp를 이용
-        if(strcmp(command, "read") == 0)
-            load();
-        else if(strcmp(command, "add") == 0)
-            add();
-        else if(strcmp(command, "find") == 0)
-            find();
-        else if(strcmp(command, "status") == 0)
-            status();
-        else if(strcmp(command, "delete") == 0)
-            delete();
-        else if(strcmp(command, "save") == 0)
-            save();
-        else if(strcmp(command, "exit") == 0)
-            break;          
-    }
-    */
 
     return 0;
 }
@@ -178,10 +155,8 @@ int read_line(char *str, int limit){
 }
 
 void add(char *name, char *number){
-    /////////////////////////////////////////////////////////////==================================
     if(n >= capa)
         reallocate();
-    /////////////////////////////////////////////////////////////==================================
 
     int i, p;
 
@@ -298,8 +273,8 @@ void save(char *as, char*filename){
     for(i = 0; i < n; i++){
         fprintf(fp, "%s ", names[i]);
         fprintf(fp, "%s\n", numbers[i]);
-        printf("%s was saved successfully.\n", filename);
     }
+    printf("%s was saved successfully.\n", filename);
     fclose(fp);
 }
 
@@ -321,5 +296,22 @@ int search(char *name){
 void reallocate(){
     // 전화번호부 배열 용량 초과 시,
     // 배열 재할당하여 더 큰 배열로 대체하는 함수
+    capa *= 2;
+    int i;
 
+    char **ptr1;    // names에 대응됨
+    char **ptr2;    // numbers에 대응됨
+
+    ptr1 = (char **)malloc(capa * sizeof(char *));
+    ptr2 = (char **)malloc(capa * sizeof(char *));
+
+    for(i = 0; i < n; i++){
+        ptr1[i] = names[i];
+        ptr2[i] = numbers[i];
+    }
+    free(names);
+    free(numbers);
+
+    names   = ptr1;
+    numbers = ptr2;
 }
