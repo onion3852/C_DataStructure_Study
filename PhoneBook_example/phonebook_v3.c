@@ -27,7 +27,7 @@
 char **names  ;    // names는 char* 타입 배열의 '이름', 즉, char** 타입 변수
 char **numbers;    // numbers는 char* 타입 배열의 '이름', 즉, char** 타입 변수
 
-char *delim = " ";  // strtok()의 2nd argument인 delimiter로 공백문자를 쓸 것임
+char *delim = " ";  // strtok()의 2nd argument인 delimiter로서 공백문자를 쓸 것임
 int n    = 0;       // number of stored data(저장된 사람 수와 같음)
 int capa = INIT_CAPA;
 
