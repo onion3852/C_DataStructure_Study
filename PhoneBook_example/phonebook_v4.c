@@ -204,6 +204,7 @@ void add_else(char *name){
 void add(char *str1, char *str2, char *str3, char *str4){
     // 데이터를 구조체에 추가하는 함수
     int i;
+    int p = 0;
 
     // 첫 add 실행 시
     if(n == 0){
@@ -223,10 +224,12 @@ void add(char *str1, char *str2, char *str3, char *str4){
         data[i + 1] = data[i];
         i--;
     }
-    data[i].name   = strdup(str1);
-    data[i].number = strdup(str2);
-    data[i].email  = strdup(str3);
-    data[i].group  = strdup(str4);
+    p = i + 1;  // p가 새로운 데이터의 인덱스임
+    
+    data[p].name   = strdup(str1);
+    data[p].number = strdup(str2);
+    data[p].email  = strdup(str3);
+    data[p].group  = strdup(str4);
     n++;
 
     return;    
@@ -264,11 +267,12 @@ void delete(char *name){
     if((i = search(name)) >= 0){
         for(; i < n-1; i++){
             data[i] = data[i + 1];
-            n--;
-            printf("'%s' was deleted successfully.\n", name);
-            
-            return;
         }
+        n--;
+        printf("'%s' was deleted successfully.\n", name);
+            
+        return;
+        
         // if i == n-1
         data[i].name   = '\0';
         data[i].number = '\0';
