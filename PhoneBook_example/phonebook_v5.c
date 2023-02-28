@@ -39,7 +39,7 @@ void add_else(char *name);
 void add(char *str1, char *str2, char *str3, char *str4);
 void reallocate();
 void find(char *name);
-void print_find(PERSON *p);
+void print_find(int i);
 void status();
 void delete(char *name);
 void release_person(PERSON *ptr);
@@ -215,7 +215,13 @@ void add(char *str1, char *str2, char *str3, char *str4){
     // 첫 add 실행 시
     if(n == 0){
         i = 0;
+        // 새로운 데이터를 저장할 구조체 공간이 있는 것은 아니므로
+        // 동적할당을 통해 이를 만들어줌
+        // 처음에 정의한 것은 구조체의 포인터들에 대한 배열이고
+        // 새로운 데이터가 저장되어야 할 때는
+        // 새로운 구조체를 만들어 놓고 포인터를 지정해주는 것임
         data[i] = (PERSON *)malloc(sizeof(PERSON));
+
         // data는 구조체의 포인터에 대한 배열이므로
         // strdup를 사용하지 않음
         data[i]->name   = str1;        
@@ -227,20 +233,17 @@ void add(char *str1, char *str2, char *str3, char *str4){
         return;       
     }
 
-    // 알파벳 순 정렬
+    
     i = n - 1;
+    // 새로운 구조체를 위한 공간 확보
+    data[i + 1] = (PERSON *)malloc(sizeof(PERSON));
+
+    // 알파벳 순 정렬
     while((i >= 0) && (strcmp(data[i]->name, str1) > 0)){
         data[i + 1] = data[i];
         i--;
     }
     p = i + 1;  // p가 새로운 데이터의 인덱스임
-
-    // 새로운 데이터를 저장할 구조체 공간이 있는 것은 아니므로
-    // 동적할당을 통해 이를 만들어줌
-    // 처음에 정의한 것은 구조체의 포인터들에 대한 배열이고
-    // 새로운 데이터가 저장되어야 할 때는
-    // 새로운 구조체를 만들어 놓고 포인터를 지정해주는 것임
-    data[p] = (PERSON *)malloc(sizeof(PERSON));
 
     data[p]->name   = str1;
     data[p]->number = str2;
@@ -265,7 +268,7 @@ void find(char *name){
     int i;
 
     if((i = search(name)) >= 0){
-        print_find(data[i]);
+        print_find(i);
         return;
     }
     printf("Person named '%s' isn't exists.\n", name);
@@ -286,18 +289,18 @@ int search(char *str){
     return -1;
 }
 
-void print_find(PERSON *p){  // 구조체의 포인터를 매개로 하는 함수 이용 방법
-    printf("%s\n", p->name);
-    printf("Phone : %s\n", p->number);
-    printf("Email : %s\n", p->email);
-    printf("Group : %s\n", p->group);
+void print_find(int i){  // 구조체의 포인터를 매개로 하는 함수 이용 방법
+    printf("%s\n", data[i]->name);
+    printf("Phone : %s\n", data[i]->number);
+    printf("Email : %s\n", data[i]->email);
+    printf("Group : %s\n", data[i]->group);
 }
 
 void status(){
     int i;
 
     for(i = 0; i < n; i++)
-        print_find(data[i]);
+        print_find(i);
 
     printf("Total %d persons.\n", n);
 }
@@ -354,7 +357,7 @@ void load(char *filename){
     // 파일에 접근하기 위해 파일 open
     FILE *fp = fopen(filename, "r");
     if(fp == NULL){
-        printf("Open failed,\n");
+        printf("Open failed. File not exists.\n");
         return;
     }
 
