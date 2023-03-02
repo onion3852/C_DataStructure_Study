@@ -43,6 +43,8 @@ int main(){
     p->next = head;
     // 주소를 정상적인 순서로 다시 맞추는 과정
     head = p;
+
+    // 검증
     NODE *ptr = head;
     while(ptr != NULL){
         printf("%s\n", ptr->data);
