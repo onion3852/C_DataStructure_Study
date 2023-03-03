@@ -14,7 +14,7 @@ struct node {
 typedef struct node NODE;
 NODE *head = NULL;
 
-NODE * find_word(char *word);
+NODE *find_word(char *word);
 
 
 int main(){
@@ -46,7 +46,7 @@ int main(){
 
 
 // function
-NODE * find_word(char *word){
+NODE *find_word(char *word){
     NODE *ptr = head;
     while(ptr != NULL){
         if(strcmp(ptr->data, word) == 0){
