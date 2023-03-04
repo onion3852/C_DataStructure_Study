@@ -1,0 +1,116 @@
+// 연결리스트를 이용해 다항식을 표현
+// 만든 다항식을 이용한 간단한 수학 프로그램 작성
+
+#include <stdio.h>
+#include <string.h>
+#include <stdlib.h>
+
+#define MAX_POLYS 25
+
+// 다항식에서 각 항에 해당하는 구조체를 정의함
+typedef struct term {
+    int coef;   // 게수
+    int expo;   // 지수
+    struct term *next;
+} TERM;
+
+// 다항식 전체를 표현하기 위한 구조체
+typedef struct polynomial {
+    char *name;
+    TERM *first;    // 다항식의 첫 항을 가리키도록 함
+    int size;
+} POLY;
+
+POLY *polys[MAX_POLYS];  // 다항식들로 구성한 배열(배열의 이름이 polys)
+int n = 0;  // 저장된 다항식들의 개수
+
+
+TERM *create_term();
+POLY *create_poly(char *name);
+void add_term(POLY *poly, int c, int e);
+
+
+int main(){
+
+    return 0;
+}
+
+
+///////////////////////////////////////////////////////////////////////
+// FUNCTION
+//////////////////////////////////////////////////////////////////////
+
+// 새 term 구조체 공간을 동적 할당받고
+// 멤버들을 초기화 시키는 함수
+// (동적으로 생성된 객체를 적절히 초기화하지 않는 것이
+// 프로그램의 오류를 야기할 수도 있음)
+TERM *create_term(){
+    TERM *ptr = (TERM *)malloc(sizeof(TERM));
+    ptr->coef = 0;
+    ptr->expo = 0;
+    ptr->next = NULL;
+
+    return ptr;
+}
+
+// 새 polynomial 구조체 공간을 동적 할당받고
+// 멤버들을 초기화 시키는 함수
+// 이 경우는 다항식의 이름을 지정하면서(매개변수) 생성하도록 함
+POLY *create_poly(char *name){
+    POLY *ptr  = (POLY *)malloc(sizeof(POLY));
+    ptr->name  = name;
+    ptr->size  = 0;
+    ptr->first = NULL;
+
+    return ptr;
+}
+
+// 다항식에 새로운 항을 추가하는 함수
+// 두 가지 케이스가 있음
+// 1) 동일한 차수의 항이 있어, 계수 계산을 하는 경우
+// 2) 새로운 차수의 항이 추가되는 경우(차수에 대해 내림차순 정렬해야 함) 
+void add_term(POLY *poly, int c, int e){
+    if(c == 0)
+        return;
+    
+    TERM *tmp1 = poly->first;
+    TERM *tmp2 = NULL;
+
+    while((tmp1 != NULL) && (tmp1->expo > e)){
+        tmp2 = tmp1;
+        tmp1 = tmp1->next;
+    }   // 동일 차수 항이 있든 없든 모두 while문을 빠져나오긴 함
+
+    // 동일한 차수항이 있는 경우
+    if((tmp1 != NULL) && (tmp1->expo == e)){
+        tmp1->coef += c;
+
+        // 계수 계산 결과가 0인 경우
+        if(tmp1->coef == 0){
+            if(tmp2 == NULL)  // 다항식 전체가 0이 되는 경우
+                poly->first = tmp1->next;  //(= NULL)
+            else
+                tmp2->next = tmp1->next;
+            
+            poly->size--;
+            free(tmp1);
+        }
+        return;
+    }
+
+    // 새로운 차수의 항이 추가되는 경우
+    // tmp2 노드의 다음 노드에 새로운 노드를 추가하는 상황
+    TERM *term = create_term();
+    term->coef = c;
+    term->expo = e;
+
+    if(tmp2 == NULL)  // 첫 번째 항으로서 추가되는 경우
+        poly->first = term;
+    else{
+        term->next = tmp1;
+        tmp2->next = term;
+    }
+    poly->size++;
+    
+    return;
+}
