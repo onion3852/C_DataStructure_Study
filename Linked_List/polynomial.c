@@ -17,7 +17,7 @@ typedef struct term {
 
 // 다항식 전체를 표현하기 위한 구조체
 typedef struct polynomial {
-    char *name;
+    char *name;     // 다항식의 이름은 알파벳 한 글자로 제한됨
     TERM *first;    // 다항식의 첫 항을 가리키도록 함
     int size;
 } POLY;
@@ -28,9 +28,10 @@ int n = 0;  // 저장된 다항식들의 개수
 
 void process_command();
 int  read_line(FILE *fp, char *str, int limit);
-void handle_print();
-void handle_calc();
-void handle_define();
+void handle_print(char ch);
+void handle_calc(char name, char *x_str);
+void handle_define(char *equation);
+void erase_blanks(char *str);
 TERM *create_term();
 POLY *create_poly(char *name);
 void add_term(POLY *poly, int c, int e);
@@ -60,44 +61,53 @@ void process_command(){
     char *arg2;
 
     while(1){
-    printf("$ ");
+        printf("$ ");
 
-    // 아무것도 입력되지 않은 경우
-    if(read_line(stdin, command_line, BUFFER_LEN) <= 0)
-        continue;
-    
-    strcpy(command_copy, command_line);  // copy the command for further use
-    command = strtok(command_copy, " ");
-    
-    if(strcmp(command, "print") == 0){
-        arg1 = strtok(NULL, " ");
-        if(arg1 == NULL){
-            printf("Error : Polynomial name is required\n");
+        // 아무것도 입력되지 않은 경우
+        if(read_line(stdin, command_line, BUFFER_LEN) <= 0)
             continue;
-        }
-        handle_print(arg1);
-    }  // "print" 명령
 
-    else if(strcmp(command, "calc")){
-        arg1 = strtok(NULL, " ");   // poly name
-        if(arg1 == NULL){
-            printf("Error : Polynomial name is required\n");
-            continue;
-        }
+        strcpy(command_copy, command_line);  // copy the command for further use
+        command = strtok(command_copy, " ");
 
-        arg2 = strtok(NULL, " ");   // value for x
-        if(arg2 == NULL){
-            printf("Error : value for 'x' is required\n");
-            continue;
-        }
+        if(strcmp(command, "print") == 0){
+            arg1 = strtok(NULL, " ");
 
+            if(arg1 == NULL){
+                printf("Error : Polynomial name is required\n");
+                continue;
+            }
 
-    }  // "calc" 명령
+            handle_print(arg1[0]);
+        }  // "print" 명령
 
-    else if(strcmp(command, "exit") == 0){
-        printf("Exit...\n");
-        break;
-    }  // "exit" 명령
+        else if(strcmp(command, "calc")){
+            arg1 = strtok(NULL, " ");   // poly name
+
+            if(arg1 == NULL){
+                printf("Error : Polynomial name is required\n");
+                continue;
+            }
+
+            arg2 = strtok(NULL, " ");   // value for x
+            if(arg2 == NULL){
+                printf("Error : value for 'x' is required\n");
+                continue;
+            }
+
+            handle_calc(arg1[0], arg2);
+        }  // "calc" 명령
+
+        else if(strcmp(command, "exit") == 0){
+            printf("Exit...\n");
+
+            break;
+        }  // "exit" 명령
+
+        // 다항식을 정의하는 명령
+        else
+            handle_define(command_copy);
+    }   
 }
 
 // 프롬프트에 작성한 명령을 읽어들이는 함수
@@ -120,15 +130,15 @@ int read_line(FILE *fp, char *str, int limit){
 }
 
 // 다항식 출력 함수
-void handle_print(char *str){
+void handle_print(char ch){
     int i = 0;
 
-    while((strcmp(str, polys[i]->name) != 0)){
+    while((strcmp(&ch, polys[i]->name) != 0)){
         i++;
     }
     // match되는 이름의 poly가 없는 경우
     if(i == n){
-        printf("Error : Polynomial '%s' isn't exists\n", str);
+        printf("Error : Polynomial '%c' isn't exists\n", ch);
 
         return;
     }
@@ -138,13 +148,43 @@ void handle_print(char *str){
 }
 
 // 다항식 계산 함수
-void handle_calc(){
+void handle_calc(char name, char *x_str){
+    POLY *temp;
 
+    // name이라는 다항식이 존재하는지 검색
+    for(int i = 0; i < n; i++){
+        if(strcmp(&name, polys[i]->name) == 0){
+            temp = polys[i];
+
+            break;
+        }
+    }
+
+    if(temp != NULL){
+        int x = (int)x_str;
+        int result = calculate(temp, x);
+        printf("calculation result : %c = %d\n", name, result);
+    }
+
+    else
+        printf("Error : Polynomial name '%c' not found.\n", name);
 }
 
 // 다항식 정의 함수
-void handle_define(){
+void handle_define(char *equation){
+   erase_blanks(equation);
 
+}
+
+// 전달받은 문자배열의 모든 공백 문자들을 제거하여 압축하고
+// 문자열의 끝에 ‘\0’를 추가함
+void erase_blanks(char *str){
+    char *ptr;
+    int length = 0;
+
+    ptr = strtok(str, " ");
+    strcpy();
+        
 }
 
 // 새 term 구조체 공간을 동적 할당받고
