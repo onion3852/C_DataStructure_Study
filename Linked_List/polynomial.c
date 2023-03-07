@@ -1,5 +1,6 @@
 // 연결리스트를 이용해 다항식을 표현
-// 만든 다항식을 이용한 간단한 수학 프로그램 작성
+// 만든 다항식을 이용할 수 있는 
+// 간단한 수학 프로그램 작성
 
 #include <stdio.h>
 #include <string.h>
@@ -31,7 +32,8 @@ int  read_line(FILE *fp, char *str, int limit);
 void handle_print(char ch);
 void handle_calc(char name, char *x_str);
 void handle_define(char *equation);
-void erase_blanks(char *str);
+char *erase_blanks(char *str);
+POLY *create_by_add_two_poly(char new_name, char former, char later);
 TERM *create_term();
 POLY *create_poly(char *name);
 void add_term(POLY *poly, int c, int e);
@@ -41,7 +43,8 @@ void print_poly(POLY *poly);
 void print_term(POLY *poly, TERM *ptr);
 
 
-
+// 다항식의 이름은 알파벳 한 글자로 정함(a ~ z)
+// 다항식간 연산은 덧셈(+)만 허용됨
 int main(){
 
     return 0;
@@ -172,19 +175,91 @@ void handle_calc(char name, char *x_str){
 
 // 다항식 정의 함수
 void handle_define(char *equation){
-   erase_blanks(equation);
+    char *new_equation = erase_blanks(equation);
+    char *poly_name = strtok(new_equation, "=");
+    if((poly_name == NULL) || (strlen(poly_name) != 1)){
+        printf("Error : You've written the unsupported name.\n");
+        
+        return;
+    }
 
+    char *body = strtok(NULL, "=");
+    if((body == NULL) || (strlen(body) <= 0)){
+        printf("Error : Invalid ewpression used after '=' .\n");
+        
+        return;
+    }
+    
+    // g = f + h 처럼 기존 poly를 이용하여 새로운 poly를 정의하는 경우
+    if((body[0] >= 'a') && (body[0] <= 'z') && (body[0] != 'x')){
+        char *former = strtok(body, "+");
+        if((former == NULL) || (strlen(former) != 1)){
+            print("Error : Invalid ewpression format.\n");
+            return;
+        }
+
+        char *later = strtok(NULL, "+");
+        if((later == NULL) || (strlen(later) != 1)){
+            print("Error : Invalid ewpression format.\n");
+            return;
+        }
+
+        POLY *new = create_by_add_two_poly(poly_name[0], former[0], later[0]);
+
+    }    
 }
 
 // 전달받은 문자배열의 모든 공백 문자들을 제거하여 압축하고
 // 문자열의 끝에 ‘\0’를 추가함
-void erase_blanks(char *str){
+char *erase_blanks(char *str){
     char *ptr;
+    char *new;
     int length = 0;
 
     ptr = strtok(str, " ");
-    strcpy();
+    strcat(new, ptr);
+
+    while((ptr = strtok(NULL, " ")) != NULL){
+        strcat(new, ptr);
+    }
+
+    if(ptr == NULL)
+        return new;
+}
+
+POLY *create_by_add_two_poly(char new_name, char former, char later){
+    POLY *temp1;
+    POLY *temp2;
+
+    // 새로운 poly를 위한 동적 할당
+    POLY *new = create_poly(new_name);
+
+    // former과 later에 해당하는 poly 맵핑시키기
+    for(int i = 0; i < n; i++){
+        if(strcmp(&former, polys[i]->name) == 0){
+            temp1 = polys[i];    
+        }
+        if(strcmp(&later, polys[i]->name) == 0){
+            temp2 = polys[i];    
+        }
+    }
+    // 우변에 작성한 다항식중 존재하지 않는 다항식이 포함된 경우
+    if((temp1 == NULL) || (temp2 == NULL)){
+        printf("Error : Equation's right-handed side contains undefined polynomial.\n");
         
+        return;
+    }
+
+    // ###########################################################################################################
+    // 두 다항식을 더하는 부분
+    // 어떤 알고리즘을 이용해야 할까?
+    // 더 큰 최고차수를 가진 다항식을 찾아냄 
+    // 둘이 같다면, 두 다항식 중 아무거나 기준삼아도 됨
+    // 암튼, 기준 다항식의 현재 term 차수와 다른 다항식의 term 차수의 크기를 비교
+    // 같지 않다면 기준 term은 new 다항식에 그대로 적용됨
+    // 같은 차수라면 두 term 더한 것이 new 다항식의 term이 됨
+    // 기준 다항식의 term을 다음 term으로 바꾸고 반복
+    // 이때, 다른 다항식의 term은 같은 차수가 발생했을 때만 다음 term으로 넘김
 }
 
 // 새 term 구조체 공간을 동적 할당받고
