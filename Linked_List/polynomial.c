@@ -34,6 +34,8 @@ void handle_calc(char name, char *x_str);
 void handle_define(char *equation);
 char *erase_blanks(char *str);
 POLY *create_by_add_two_poly(char new_name, char former, char later);
+void insert_poly(POLY *poly);
+void destroy_poly(POLY *poly);
 TERM *create_term();
 POLY *create_poly(char *name);
 void add_term(POLY *poly, int c, int e);
@@ -205,7 +207,12 @@ void handle_define(char *equation){
         }
 
         POLY *new = create_by_add_two_poly(poly_name[0], former[0], later[0]);
+        if(new == NULL){
+            printf("Error : Invalid expression format.\n");
+            return;
+        }
 
+        insert_poly(new);
     }    
 }
 
@@ -227,6 +234,7 @@ char *erase_blanks(char *str){
         return new;
 }
 
+// 이미 존재하는 두 다항식을 더하여 새로운 다항식을 만드는 함수 
 POLY *create_by_add_two_poly(char new_name, char former, char later){
     POLY *temp1;
     POLY *temp2;
@@ -250,21 +258,139 @@ POLY *create_by_add_two_poly(char new_name, char former, char later){
         return;
     }
 
-    // ###########################################################################################################
     // 두 다항식을 더하는 부분
-    // 어떤 알고리즘을 이용해야 할까?
-    // 더 큰 최고차수를 가진 다항식을 찾아냄 
-    // 둘이 같다면, 두 다항식 중 아무거나 기준삼아도 됨
-    // 암튼, 기준 다항식의 현재 term 차수와 다른 다항식의 term 차수의 크기를 비교
-    // 같지 않다면 기준 term은 new 다항식에 그대로 적용됨
-    // 같은 차수라면 두 term 더한 것이 new 다항식의 term이 됨
-    // 기준 다항식의 term을 다음 term으로 바꾸고 반복
-    // 이때, 다른 다항식의 term은 같은 차수가 발생했을 때만 다음 term으로 넘김
+    int i = 0;
+    int size_1 = temp1->size;
+    int size_2 = temp2->size;
+    TERM *ptr1 = temp1->first;
+    TERM *ptr2 = temp2->first;
+    
+    if(ptr1->expo > ptr2->expo){
+        add_term(new, ptr1->coef, ptr1->expo);
+        ptr1 = ptr1->next;
+        i++;
+
+        while((i <= size_1) && (ptr1 != NULL)){
+            if(ptr1->expo > ptr2->expo){
+                add_term(new, ptr1->coef, ptr1->expo);
+                ptr1 = ptr1->next;
+                i++;
+
+                continue;
+            }
+
+            else if(ptr2->expo > ptr1->expo){
+                add_term(new, ptr2->coef, ptr2->expo);
+                ptr2 = ptr2->next;
+
+                continue;
+            }
+
+            else if(ptr1->expo == ptr2->expo){
+                add_term(new, ptr1->coef + ptr2->coef, ptr1->expo);
+                ptr1 = ptr1->next;
+                ptr2 = ptr2->next;
+                i++;
+
+                continue;
+            }
+        }
+    }// former 다항식이 더 고차항을 가짐
+
+    if(ptr2->expo > ptr1->expo){
+        add_term(new, ptr2->coef, ptr2->expo);
+        ptr2 = ptr2->next;
+        i++;
+
+        while((i <= size_2) && (ptr2 != NULL)){
+            if(ptr2->expo > ptr1->expo){
+                add_term(new, ptr2->coef, ptr2->expo);
+                ptr2 = ptr2->next;
+                i++;
+
+                continue;
+            }
+
+            else if(ptr1->expo > ptr2->expo){
+                add_term(new, ptr1->coef, ptr1->expo);
+                ptr1 = ptr1->next;
+
+                continue;
+            }
+
+            else if(ptr1->expo == ptr2->expo){
+                add_term(new, ptr1->coef + ptr2->coef, ptr1->expo);
+                ptr1 = ptr1->next;
+                ptr2 = ptr2->next;
+                i++;
+
+                continue;
+            }
+        }
+    }// later 다항식이 더 고차항을 가짐
+
+    else if(ptr1->expo == ptr2->expo){
+        // i의 기준값은 size_1, size_2 모두 가능
+        add_term(new, ptr1->coef + ptr2->coef, ptr1->expo);
+        ptr1 = ptr1->next;
+        ptr2 = ptr2->next;
+        i++;
+
+        while((i <= size_1) && (ptr1 != NULL)){
+            if(ptr1->expo > ptr2->expo){
+                add_term(new, ptr1->coef, ptr1->expo);
+                ptr1 = ptr1->next;
+                i++;
+
+                continue;
+            }
+
+            else if(ptr2->expo > ptr1->expo){
+                add_term(new, ptr2->coef, ptr2->expo);
+                ptr2 = ptr2->next;
+
+                continue;
+            }
+
+            else if(ptr1->expo == ptr2->expo){
+                add_term(new, ptr1->coef + ptr2->coef, ptr1->expo);
+                ptr1 = ptr1->next;
+                ptr2 = ptr2->next;
+                i++;
+
+                continue;
+            }
+        }
+    }// 두 다항식의 최고차수가 같은 경우
+}
+
+// 새로 만든 다항식을 polys 배열에 추가하는 함수
+// 덮어쓰는 기능도 함
+void insert_poly(POLY *poly){
+    for(int i = 0; i < n; i++){
+        // 덮어쓰는 경우
+        if(poly->name == polys[i]->name){
+            destroy_poly(polys[i]);
+            polys[i] = poly;
+
+            return;
+        }
+
+        // 새로운 다항식이 추가되는 경우
+        // 다항식들 자체는 알파벳 순으로 배열하지 않음
+        polys[n] = poly;
+        n++;
+    }
+}
+
+// polys 배열에 저장되어 있는 다항식을 지우는 함수
+void destroy_poly(POLY *poly){
+    
 }
 
 // 새 term 구조체 공간을 동적 할당받고
 // 멤버들을 초기화 시키는 함수
-// (동적으로 생성된 객체를 적절히 초기화하지 않는 것이
+// (동적으로 생성된 객체를 적절히 초기화하지 않는 것은
 // 프로그램의 오류를 야기할 수도 있음)
 TERM *create_term(){
     TERM *ptr = (TERM *)malloc(sizeof(TERM));
