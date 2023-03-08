@@ -385,7 +385,20 @@ void insert_poly(POLY *poly){
 
 // polys 배열에 저장되어 있는 다항식을 지우는 함수
 void destroy_poly(POLY *poly){
+    if(poly == NULL)
+        return;
     
+    TERM *tmp1 = poly->first;
+    TERM *tmp2;
+
+    while(tmp1 != NULL){
+        tmp2 = tmp1;
+        tmp1 = tmp1->next;
+        free(tmp2);
+    }
+    free(poly);
+
+    return;
 }
 
 // 새 term 구조체 공간을 동적 할당받고
