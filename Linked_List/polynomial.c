@@ -8,6 +8,7 @@
 
 #define MAX_POLYS  25
 #define BUFFER_LEN 100
+#define TERM_LEN   15
 
 // 다항식에서 각 항에 해당하는 구조체를 정의함
 typedef struct term {
@@ -33,6 +34,7 @@ void handle_print(char ch);
 void handle_calc(char name, char *x_str);
 void handle_define(char *equation);
 char *erase_blanks(char *str);
+POLY *create_by_parse(char name, char *body);
 POLY *create_by_add_two_poly(char new_name, char former, char later);
 void insert_poly(POLY *poly);
 void destroy_poly(POLY *poly);
@@ -48,6 +50,7 @@ void print_term(POLY *poly, TERM *ptr);
 // 다항식의 이름은 알파벳 한 글자로 정함(a ~ z)
 // 다항식간 연산은 덧셈(+)만 허용됨
 int main(){
+    process_command();
 
     return 0;
 }
@@ -86,7 +89,7 @@ void process_command(){
             handle_print(arg1[0]);
         }  // "print" 명령
 
-        else if(strcmp(command, "calc")){
+        else if(strcmp(command, "calc") == 0){
             arg1 = strtok(NULL, " ");   // poly name
 
             if(arg1 == NULL){
@@ -138,7 +141,7 @@ int read_line(FILE *fp, char *str, int limit){
 void handle_print(char ch){
     int i = 0;
 
-    while((strcmp(&ch, polys[i]->name) != 0)){
+    while((strcmp(&ch, polys[i]->name) != 0) && (i <= n -1)){
         i++;
     }
     // match되는 이름의 poly가 없는 경우
@@ -196,24 +199,37 @@ void handle_define(char *equation){
     if((body[0] >= 'a') && (body[0] <= 'z') && (body[0] != 'x')){
         char *former = strtok(body, "+");
         if((former == NULL) || (strlen(former) != 1)){
-            print("Error : Invalid ewpression format.\n");
+            printf("Error : Invalid ewpression format.\n");
             return;
         }
 
         char *later = strtok(NULL, "+");
         if((later == NULL) || (strlen(later) != 1)){
-            print("Error : Invalid ewpression format.\n");
+            printf("Error : Invalid ewpression format.\n");
             return;
         }
 
         POLY *new = create_by_add_two_poly(poly_name[0], former[0], later[0]);
         if(new == NULL){
             printf("Error : Invalid expression format.\n");
+
             return;
         }
 
         insert_poly(new);
-    }    
+    }
+
+    // g = ax^2 + bx + c 처럼 새로운 poly를 정의하는 경우
+    else{
+        POLY *new = create_by_parse(poly_name[0], body);
+        if(new == NULL){
+            printf("Error : Invalid expression format.\n");
+
+            return;
+        }
+
+        insert_poly(new);
+    }
 }
 
 // 전달받은 문자배열의 모든 공백 문자들을 제거하여 압축하고
@@ -234,13 +250,105 @@ char *erase_blanks(char *str){
         return new;
 }
 
+// 다항식을 새로 정의하는 함수
+POLY *create_by_parse(char name, char *body){
+    POLY *ptr = create_poly(&name);
+    int i = 0, p = 0;
+    int start_point = 0;
+    int sign = 1;
+    int coef = 0;
+    int expo = 0;
+
+    // 얻어진 하나의 항을 분석하여 TERM 으로서 저장
+    while(i < strlen(body)){
+        if((body[i] == '+') || (body[i] == '-')){
+            i++;
+        }
+        // 하나의 항이 끝날 때까지 전진
+        while((i < strlen(body)) && (body[i] != '+') && (body[i] != '-')){
+            i++;
+        }   /*여기까지가 하나의 항을 구분하는 부분*/
+        
+        // 구분한 항 1개에 대한 분석 시작
+        // 음수 계수이면 부호를 따로 기억
+        if(body[start_point] == '-'){
+            sign = -1;
+            p++;
+        }
+
+        // 항의 계수를 감지
+        while(sizeof(body[start_point + p]) == sizeof(int)){
+            coef = (coef * 10) + (int)body[start_point + p];
+            p++;
+        }
+
+        // 상수항인 경우 x가 감지되지 않고
+        // 다항식의 마지막이거나, 바로 다음 character가 +/- 이게 되므로
+        if((i == (strlen(body)- 1)) || (body[start_point + p] == '+') || (body[start_point + p] == '-')){
+            expo = 0;
+            if(sign == -1)
+                coef *= -1;
+
+            add_term(ptr, coef, expo);
+
+            continue;
+        }
+
+        // 미지수 x 감지
+        if(body[start_point + p] != 'x'){
+            destroy_poly(ptr);
+
+            return NULL;
+        }
+        else
+            p++;
+
+        // ^ 기호 감지
+        // 1차식일 경우 ^가 없는 경우 포함
+        if((body[start_point + p - 1] == 'x') && (body[start_point + p] != '^')){
+            expo = 1;
+            if(sign == -1)
+                coef *= -1;
+
+            add_term(ptr, coef, expo);
+
+            continue;
+        }
+        else if((body[start_point + p - 1] == 'x') && (body[start_point + p] == '^'))
+            p++;
+        else
+            p++;
+
+        // 항의 차수를 감지
+        while(sizeof(body[start_point + p]) == sizeof(int)){
+            expo = (coef * 10) + (int)body[start_point + p];
+            p++;
+        }
+
+        //////////////////////////////////////////////////////
+        // FOR DEBUGGING
+        if((start_point + p) != i){
+            printf("TEST ERROR");
+        }
+        //////////////////////////////////////////////////////
+
+        // 최종적으로 항 1개를 확정짓는 부분
+        if(sign == -1)
+            coef *= -1;
+        
+        add_term(ptr, coef, expo);
+
+        continue;
+    }
+}
+
 // 이미 존재하는 두 다항식을 더하여 새로운 다항식을 만드는 함수 
 POLY *create_by_add_two_poly(char new_name, char former, char later){
     POLY *temp1;
     POLY *temp2;
 
     // 새로운 poly를 위한 동적 할당
-    POLY *new = create_poly(new_name);
+    POLY *new = create_poly(&new_name);
 
     // former과 later에 해당하는 poly 맵핑시키기
     for(int i = 0; i < n; i++){
@@ -255,7 +363,7 @@ POLY *create_by_add_two_poly(char new_name, char former, char later){
     if((temp1 == NULL) || (temp2 == NULL)){
         printf("Error : Equation's right-handed side contains undefined polynomial.\n");
         
-        return;
+        return NULL;
     }
 
     // 두 다항식을 더하는 부분
