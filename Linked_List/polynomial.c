@@ -19,7 +19,7 @@ typedef struct term {
 
 // 다항식 전체를 표현하기 위한 구조체
 typedef struct polynomial {
-    char *name;     // 다항식의 이름은 알파벳 한 글자로 제한됨
+    char name;     // 다항식의 이름은 알파벳 한 글자로 제한됨
     TERM *first;    // 다항식의 첫 항을 가리키도록 함
     int size;
 } POLY;
@@ -39,7 +39,7 @@ POLY *create_by_add_two_poly(char new_name, char former, char later);
 void insert_poly(POLY *poly);
 void destroy_poly(POLY *poly);
 TERM *create_term();
-POLY *create_poly(char *name);
+POLY *create_poly(char name);
 void add_term(POLY *poly, int c, int e);
 int  calculate(POLY *poly, int x);
 int  cal(TERM *ptr, int x);
@@ -87,6 +87,8 @@ void process_command(){
             }
 
             handle_print(arg1[0]);
+            printf("\n");
+            continue;
         }  // "print" 명령
 
         else if(strcmp(command, "calc") == 0){
@@ -104,6 +106,7 @@ void process_command(){
             }
 
             handle_calc(arg1[0], arg2);
+            continue;
         }  // "calc" 명령
 
         else if(strcmp(command, "exit") == 0){
@@ -113,8 +116,10 @@ void process_command(){
         }  // "exit" 명령
 
         // 다항식을 정의하는 명령
-        else
+        else{
             handle_define(command_copy);
+            continue;
+        }
     }   
 }
 
@@ -139,20 +144,22 @@ int read_line(FILE *fp, char *str, int limit){
 
 // 다항식 출력 함수
 void handle_print(char ch){
-    int i = 0;
+    int i;
+    printf("TEST:: polys[0]->name=%c\n", polys[0]->name);
+    for(i = 0; i < n; i++){
+        if(ch == polys[i]->name){
+            print_poly(polys[i]);
 
-    while((strcmp(&ch, polys[i]->name) != 0) && (i <= n -1)){
-        i++;
+            return;
+        }
     }
+
     // match되는 이름의 poly가 없는 경우
     if(i == n){
         printf("Error : Polynomial '%c' isn't exists\n", ch);
 
         return;
     }
-    
-    printf("%s = ");
-    print_poly(polys[i]);
 }
 
 // 다항식 계산 함수
@@ -161,7 +168,7 @@ void handle_calc(char name, char *x_str){
 
     // name이라는 다항식이 존재하는지 검색
     for(int i = 0; i < n; i++){
-        if(strcmp(&name, polys[i]->name) == 0){
+        if(name == polys[i]->name){
             temp = polys[i];
 
             break;
@@ -179,8 +186,9 @@ void handle_calc(char name, char *x_str){
 }
 
 // 다항식 정의 함수
-void handle_define(char *equation){
+void handle_define(char equation[]){
     char *new_equation = erase_blanks(equation);
+    printf("TEST:: ERASE_BLANK : %s\n\n", new_equation);
     char *poly_name = strtok(new_equation, "=");
     if((poly_name == NULL) || (strlen(poly_name) != 1)){
         printf("Error : You've written the unsupported name.\n");
@@ -199,19 +207,19 @@ void handle_define(char *equation){
     if((body[0] >= 'a') && (body[0] <= 'z') && (body[0] != 'x')){
         char *former = strtok(body, "+");
         if((former == NULL) || (strlen(former) != 1)){
-            printf("Error : Invalid ewpression format.\n");
+            printf("Error : Invalid ewpression format.(1)\n");
             return;
         }
 
         char *later = strtok(NULL, "+");
         if((later == NULL) || (strlen(later) != 1)){
-            printf("Error : Invalid ewpression format.\n");
+            printf("Error : Invalid ewpression format.(2)\n");
             return;
         }
 
         POLY *new = create_by_add_two_poly(poly_name[0], former[0], later[0]);
         if(new == NULL){
-            printf("Error : Invalid expression format.\n");
+            printf("Error : Invalid expression format.(3)\n");
 
             return;
         }
@@ -219,11 +227,14 @@ void handle_define(char *equation){
         insert_poly(new);
     }
 
-    // g = ax^2 + bx + c 처럼 새로운 poly를 정의하는 경우
+    // 새로운 poly를 정의하는 경우
+    // g = ax^2 + bx + c 형식
     else{
+        printf("TEST:: poly_name : %c\n", poly_name[0]);
+        printf("TEST:: body      : %s\n", body);
         POLY *new = create_by_parse(poly_name[0], body);
         if(new == NULL){
-            printf("Error : Invalid expression format.\n");
+            printf("Error : Invalid expression format.(4)\n");
 
             return;
         }
@@ -234,25 +245,25 @@ void handle_define(char *equation){
 
 // 전달받은 문자배열의 모든 공백 문자들을 제거하여 압축하고
 // 문자열의 끝에 ‘\0’를 추가함
-char *erase_blanks(char *str){
+char *erase_blanks(char str[]){
     char *ptr;
     char *new;
-    int length = 0;
 
-    ptr = strtok(str, " ");
-    strcat(new, ptr);
+    new = strtok(str, " ");
 
     while((ptr = strtok(NULL, " ")) != NULL){
+        printf("TEST:: token : %s\n", ptr);
         strcat(new, ptr);
+        printf("TEST:: string : %s\n", new);
     }
-
+        printf("TEST:: final string : %s\n", new);
     if(ptr == NULL)
         return new;
 }
 
 // 다항식을 새로 정의하는 함수
 POLY *create_by_parse(char name, char *body){
-    POLY *ptr = create_poly(&name);
+    POLY *ptr = create_poly(name);
     int i = 0, p = 0;
     int start_point = 0;
     int sign = 1;
@@ -261,7 +272,11 @@ POLY *create_by_parse(char name, char *body){
 
     // 얻어진 하나의 항을 분석하여 TERM 으로서 저장
     while(i < strlen(body)){
+        printf("TEST:: i=%d, start_point=%d, p=%d\n", i, start_point, p);
         if((body[i] == '+') || (body[i] == '-')){
+            if(i != 0)
+                p++;
+            
             i++;
         }
         // 하나의 항이 끝날 때까지 전진
@@ -273,35 +288,51 @@ POLY *create_by_parse(char name, char *body){
         // 음수 계수이면 부호를 따로 기억
         if(body[start_point] == '-'){
             sign = -1;
-            p++;
+            if(start_point == 0)
+                p++;
         }
-
+        
+        printf("TEST:: 'i' is %d\n", i);
+        printf("TEST:: 'p' is %d\n", p);
         // 항의 계수를 감지
-        while(sizeof(body[start_point + p]) == sizeof(int)){
-            coef = (coef * 10) + (int)body[start_point + p];
+        // 현재는 body 배열에 character 타입으로 나열되어 있는 상태
+        while((body[start_point + p] >= '0') && (body[start_point + p] <= '9')){
+            coef = (coef * 10) + ((int)body[start_point + p] - 48);  // 아스키코드가 가리키는 숫자를 실제 정수로 mapping
             p++;
+            printf("TEST:: sign=%d, coef=%d \n", sign, coef);
         }
-
-        // 상수항인 경우 x가 감지되지 않고
+        printf("TEST:: 'p' is %d\n", p);
+        // 상수항인 경우,
+        // 미지수 x가 감지되지 않고
         // 다항식의 마지막이거나, 바로 다음 character가 +/- 이게 되므로
-        if((i == (strlen(body)- 1)) || (body[start_point + p] == '+') || (body[start_point + p] == '-')){
+        if((i == (strlen(body))) || (body[start_point + p] == '+') || (body[start_point + p] == '-')){
             expo = 0;
             if(sign == -1)
                 coef *= -1;
 
+            printf("TEST:: sign=%d, coef=%d, expo=%d \n", sign, coef, expo);
             add_term(ptr, coef, expo);
-
+            sign = 1;
+            coef = 0;
+            expo = 0;
+            start_point += p;
+            p    = 0;
+            
+            
             continue;
         }
 
         // 미지수 x 감지
         if(body[start_point + p] != 'x'){
             destroy_poly(ptr);
-
+            printf("TEST:: 'p' is %d\n", p);
+            printf("TEST:: sign=%d, coef=%d \n", sign, coef);
+            printf("Error : Invalid expression format.(4)-1\n");
             return NULL;
         }
         else
             p++;
+        printf("TEST:: 'p' is %d\n", p);
 
         // ^ 기호 감지
         // 1차식일 경우 ^가 없는 경우 포함
@@ -309,8 +340,13 @@ POLY *create_by_parse(char name, char *body){
             expo = 1;
             if(sign == -1)
                 coef *= -1;
-
+            printf("TEST:: sign=%d, coef=%d, expo=%d \n", sign, coef, expo);
             add_term(ptr, coef, expo);
+            sign = 1;
+            coef = 0;
+            expo = 0;
+            start_point += p;
+            p    = 0;
 
             continue;
         }
@@ -320,9 +356,10 @@ POLY *create_by_parse(char name, char *body){
             p++;
 
         // 항의 차수를 감지
-        while(sizeof(body[start_point + p]) == sizeof(int)){
-            expo = (coef * 10) + (int)body[start_point + p];
+        while((body[start_point + p] >= '0') && (body[start_point + p] <= '9')){
+            expo = (expo * 10) + ((int)body[start_point + p] - 48);  // 아스키코드가 가리키는 숫자를 실제 정수로 mapping
             p++;
+            printf("TEST:: sign=%d, coef=%d, expo=%d \n", sign, coef, expo);
         }
 
         //////////////////////////////////////////////////////
@@ -336,10 +373,18 @@ POLY *create_by_parse(char name, char *body){
         if(sign == -1)
             coef *= -1;
         
+        printf("TEST:: sign=%d, coef=%d, expo=%d \n", sign, coef, expo);
         add_term(ptr, coef, expo);
+        sign = 1;
+        coef = 0;
+        expo = 0;
+        start_point += p;
+        p    = 0;
 
         continue;
     }
+
+    return ptr;
 }
 
 // 이미 존재하는 두 다항식을 더하여 새로운 다항식을 만드는 함수 
@@ -348,14 +393,14 @@ POLY *create_by_add_two_poly(char new_name, char former, char later){
     POLY *temp2;
 
     // 새로운 poly를 위한 동적 할당
-    POLY *new = create_poly(&new_name);
+    POLY *new = create_poly(new_name);
 
     // former과 later에 해당하는 poly 맵핑시키기
     for(int i = 0; i < n; i++){
-        if(strcmp(&former, polys[i]->name) == 0){
+        if(former == polys[i]->name){
             temp1 = polys[i];    
         }
-        if(strcmp(&later, polys[i]->name) == 0){
+        if(later == polys[i]->name){
             temp2 = polys[i];    
         }
     }
@@ -475,6 +520,12 @@ POLY *create_by_add_two_poly(char new_name, char former, char later){
 // 새로 만든 다항식을 polys 배열에 추가하는 함수
 // 덮어쓰는 기능도 함
 void insert_poly(POLY *poly){
+    if(n == 0){
+        polys[n] = poly;
+        n++;
+        printf("TEST:: poly name=%c\n", polys[0]->name);
+        return;
+    }
     for(int i = 0; i < n; i++){
         // 덮어쓰는 경우
         if(poly->name == polys[i]->name){
@@ -525,7 +576,7 @@ TERM *create_term(){
 // 새 polynomial 구조체 공간을 동적 할당받고
 // 멤버들을 초기화 시키는 함수
 // 이 경우는 다항식의 이름을 지정하면서(매개변수) 생성하도록 함
-POLY *create_poly(char *name){
+POLY *create_poly(char name){
     POLY *ptr  = (POLY *)malloc(sizeof(POLY));
     ptr->name  = name;
     ptr->size  = 0;
@@ -610,7 +661,7 @@ int cal(TERM *ptr, int x){
 
 // 다항식을 터미널에 출력하는 함수
 void print_poly(POLY *poly){
-    printf("%s = ", poly->name);
+    printf("%c = ", poly->name);
     TERM *p = poly->first;
 
     while(p != NULL){
@@ -625,7 +676,7 @@ void print_term(POLY *poly, TERM *ptr){
     char sign;
 
     // + 부호 출력여부 판단
-    if((ptr != poly->first) && (ptr->coef > 0)){
+    if((ptr != NULL) && (ptr != poly->first) && (ptr->coef > 0)){
         printf("+");
     }
 
