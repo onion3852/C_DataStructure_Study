@@ -7,8 +7,7 @@
 #include <stdlib.h>
 
 #define MAX_POLYS  25
-#define BUFFER_LEN 100
-#define TERM_LEN   15
+#define BUFFER_LEN 200
 
 // 다항식에서 각 항에 해당하는 구조체를 정의함
 typedef struct term {
@@ -187,7 +186,8 @@ void handle_calc(char name, char *x_str){
 
 // 다항식 정의 함수
 void handle_define(char equation[]){
-    char new_equation[BUFFER_LEN]; 
+    char new_equation[BUFFER_LEN];
+
     erase_blanks(equation, new_equation);
     printf("TEST:: ERASE_BLANK : %s\n", new_equation);
     char *poly_name = strtok(new_equation, "=");
@@ -259,11 +259,11 @@ void erase_blanks(char str[], char erased[]){
     while((ptr = strtok(NULL, " ")) != NULL){
         printf("TEST:: token : %s\n", ptr);
         strcat(erased, ptr);
-        printf("TEST:: string : %s\n", ptr);
+        printf("TEST:: string : %s\n", erased);
     }
         printf("TEST:: final string : %s\n", erased);
 
-        return;
+    return;
 }
 
 // 다항식을 새로 정의하는 함수
