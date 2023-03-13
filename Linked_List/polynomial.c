@@ -32,8 +32,8 @@ void process_command();
 int  read_line(FILE *fp, char *str, int limit);
 void handle_print(char ch);
 void handle_calc(char name, char *x_str);
-void handle_define(char *equation);
-char *erase_blanks(char *str);
+void handle_define(char equation[]);
+void erase_blanks(char str[], char erased[]);
 POLY *create_by_parse(char name, char *body);
 POLY *create_by_add_two_poly(char new_name, char former, char later);
 void insert_poly(POLY *poly);
@@ -76,7 +76,7 @@ void process_command(){
             continue;
 
         strcpy(command_copy, command_line);  // copy the command for further use
-        command = strtok(command_copy, " ");
+        command = strtok(command_line, " ");
 
         if(strcmp(command, "print") == 0){
             arg1 = strtok(NULL, " ");
@@ -187,9 +187,11 @@ void handle_calc(char name, char *x_str){
 
 // 다항식 정의 함수
 void handle_define(char equation[]){
-    char *new_equation = erase_blanks(equation);
-    printf("TEST:: ERASE_BLANK : %s\n\n", new_equation);
+    char new_equation[BUFFER_LEN]; 
+    erase_blanks(equation, new_equation);
+    printf("TEST:: ERASE_BLANK : %s\n", new_equation);
     char *poly_name = strtok(new_equation, "=");
+    printf("TEST:: POLY name : %s\n\n", poly_name);
     if((poly_name == NULL) || (strlen(poly_name) != 1)){
         printf("Error : You've written the unsupported name.\n");
         
@@ -245,20 +247,23 @@ void handle_define(char equation[]){
 
 // 전달받은 문자배열의 모든 공백 문자들을 제거하여 압축하고
 // 문자열의 끝에 ‘\0’를 추가함
-char *erase_blanks(char str[]){
+void erase_blanks(char str[], char erased[]){
     char *ptr;
-    char *new;
-
-    new = strtok(str, " ");
+    printf("TEST:: inputed string : %s\n", str);
+    ptr = strtok(str, " ");
+    if(ptr == NULL)
+        return;
+    
+    strcpy(erased, ptr);
 
     while((ptr = strtok(NULL, " ")) != NULL){
         printf("TEST:: token : %s\n", ptr);
-        strcat(new, ptr);
-        printf("TEST:: string : %s\n", new);
+        strcat(erased, ptr);
+        printf("TEST:: string : %s\n", ptr);
     }
-        printf("TEST:: final string : %s\n", new);
-    if(ptr == NULL)
-        return new;
+        printf("TEST:: final string : %s\n", erased);
+
+        return;
 }
 
 // 다항식을 새로 정의하는 함수
