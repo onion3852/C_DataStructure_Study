@@ -169,19 +169,58 @@ void handle_calc(char name, char *x_str){
     for(int i = 0; i < n; i++){
         if(name == polys[i]->name){
             temp = polys[i];
-
+            printf("TEST:: poly name %c found. it's index is %d\n", name, i);
+            
             break;
         }
     }
-
+    printf("TEST:: Stuck at here 0\n");
     if(temp != NULL){
-        int x = (int)x_str;
-        int result = calculate(temp, x);
-        printf("calculation result : %c = %d\n", name, result);
+        // x_str은 string이므로 아스키코드를 고려하여 int로 변환해야함
+        // 이때, x_str이 두자리 이상의 정수인 경우와
+        // 음수인 경우도 고려되어야 함
+        int value = 0;
+        int i = 0;
+        printf("TEST:: Stuck at here 0_1\n");
+        // 올바르지 않은 입력이 x_str에 있는지 검사
+        while(x_str[i] != '\0'){
+            if((x_str[0] != '-') && ((x_str[i] < '0') || (x_str[i] > '9'))){
+                printf("Error : Invalid value for 'x' .\n");
+
+                return;
+            }
+            i++;
+        }
+        printf("TEST:: Stuck at here 1\n");
+        // x_str이 음수인 경우
+        if(x_str[0] == '-'){
+            i++;
+            while((x_str[i] >= '0') && (x_str[i] <= '9') && (x_str[i] != '\0')){
+                value = (value * 10) + ((int)x_str[i] - 48);
+                i++;
+            }
+            value *= -1;
+            printf("calculation result : %c = %d\n", name, calculate(temp, value));
+
+            return;
+        }
+        printf("TEST:: Stuck at here 2\n");
+        // x_str이 양수인 경우
+        if((x_str[0] >= '0') && (x_str[0] <= '9')){
+            while((x_str[i] >= '0') && (x_str[i] <= '9') && (x_str[i] != '\0')){
+                value = (value * 10) + ((int)x_str[i] - 48);
+                i++;
+            }
+            printf("calculation result : %c = %d\n", name, calculate(temp, value));
+
+            return;
+        }
     }
 
     else
         printf("Error : Polynomial name '%c' not found.\n", name);
+
+        return;
 }
 
 // 다항식 정의 함수
